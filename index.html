@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BL_Loops: Masterclass Interactiva de Agentes de IA Local</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+    .wave-bar:nth-child(1) { animation: wave 1s infinite ease-in-out; }
+    .wave-bar:nth-child(2) { animation: wave 1.2s infinite ease-in-out 0.2s; }
+    .wave-bar:nth-child(3) { animation: wave 0.8s infinite ease-in-out 0.4s; }
+    .wave-bar:nth-child(4) { animation: wave 1.1s infinite ease-in-out 0.1s; }
+    .wave-bar:nth-child(5) { animation: wave 0.9s infinite ease-in-out 0.3s; }
+    
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.4); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.7); }
+    
+    .terminal-cursor::after {
+      content: '▋';
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body class="bg-[#0b0f17] text-slate-100 antialiased min-h-screen flex flex-col font-sans selection:bg-indigo-600 selection:text-white">
+
+  <!-- TOP HEADER & BRANDING -->
+  <header class="h-16 border-b border-slate-800 bg-[#0e1420]/90 backdrop-blur sticky top-0 z-50 px-4 md:px-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 font-black text-white text-lg tracking-wider">
+        BL
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-sm md:text-base text-slate-100 tracking-tight">BL_Loops: Masterclass de Agentes de IA</h1>
+          <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">100% Local</span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Laboratorios interactivos, arquitectura desacoplada y contratos reproducibles</p>
+      </div>
+    </div>
+
+    <!-- Controls & Progress Header -->
+    <div class="flex items-center gap-4">
+      <div class="hidden lg:flex items-center gap-3 pr-4 border-r border-slate-800">
+        <div class="text-right">
+          <div class="text-xs text-slate-400 font-medium">Progreso Global</div>
+          <div id="top-progress-text" class="text-xs font-bold text-indigo-400">0% (0/12 Sesiones)</div>
+        </div>
+        <div class="w-28 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+          <div id="top-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 w-0 transition-all duration-500"></div>
+        </div>
+      </div>
+
+      <!-- Voice Reader Mode Badge -->
+      <button id="btn-toggle-tts" title="Activar/Desactivar Voz del Profesor (Speech Synthesis)" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-all shadow-sm">
+        <svg id="tts-icon-on" class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <span id="tts-status-text" class="hidden sm:inline">Voz: Lista</span>
+        <!-- Wave animation when playing -->
+        <div id="tts-wave" class="hidden items-center gap-0.5 h-4 ml-1">
+          <span class="wave-bar w-0.5 bg-cyan-400 rounded-full inline-block"></span>
+          <span class="wave-bar w-0.5 bg-cyan-400 rounded-full inline-block"></span>
+          <span class="wave-bar w-0.5 bg-cyan-400 rounded-full inline-block"></span>
+          <span class="wave-bar w-0.5 bg-cyan-400 rounded-full inline-block"></span>
+        </div>
+      </button>
+
+      <!-- Repo Reference Link -->
+      <a href="https://github.com/Cristrva1/BL_Loops" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 px-3 py-1.5 rounded-lg border border-slate-700 transition-all">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span class="hidden md:inline">GitHub Repo</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER (Curriculum Sidebar + Central Masterclass Stage) -->
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    
+    <!-- LEFT SIDEBAR: PLAYLIST & SESSIONS -->
+    <aside class="w-full lg:w-80 xl:w-96 border-b lg:border-b-0 lg:border-r border-slate-800 bg-[#0d121c] flex flex-col shrink-0 max-h-[40vh] lg:max-h-none overflow-y-auto">
+      <div class="p-4 border-b border-slate-800 bg-slate-900/60 sticky top-0 z-10 backdrop-blur flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Plan de Estudio Oficial</div>
+          <div class="text-sm font-semibold text-white">5 Fases &bull; 12 Sesiones</div>
+        </div>
+        <button id="btn-reset-progress" class="text-[11px] text-slate-400 hover:text-rose-400 hover:underline">Reiniciar</button>
+      </div>
+
+      <!-- Phases & Sessions Accordion Container -->
+      <div id="curriculum-container" class="divide-y divide-slate-800/60">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </aside>
+
+    <!-- CENTER & RIGHT: MASTERCLASS STAGE (The "Interactive Video Player") -->
+    <main class="flex-1 flex flex-col overflow-y-auto bg-gradient-to-b from-[#0b0f17] to-[#090d14]">
+      
+      <!-- PLAYER CARD CONTAINER -->
+      <div class="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto w-full space-y-6">
+        
+        <!-- BREADCRUMBS & BADGES -->
+        <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2 text-slate-400">
+            <span id="badge-phase" class="px-2.5 py-1 rounded-md bg-indigo-950/70 border border-indigo-800/80 text-indigo-300 font-semibold uppercase tracking-wider text-[11px]">Fase 1</span>
+            <span>&bull;</span>
+            <span id="badge-session-tag" class="text-slate-300 font-medium">Sesión 1.1</span>
+            <span>&bull;</span>
+            <span id="badge-duration" class="text-slate-400 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              ~15 min
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="session-completed-pill" class="hidden px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-[11px] font-bold items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Sesión Aprobada
+            </span>
+          </div>
+        </div>
+
+        <!-- STAGE: THE "INTERACTIVE VIDEO PLAYER" -->
+        <div class="border border-slate-700/80 rounded-2xl bg-[#0d131f] shadow-2xl overflow-hidden flex flex-col">
+          
+          <!-- VIDEO SCREEN SIMULATOR (Top Stage Canvas/Slides) -->
+          <div class="relative bg-gradient-to-br from-[#121929] via-[#0e1422] to-[#0a0d16] p-6 md:p-8 min-h-[380px] flex flex-col justify-between border-b border-slate-800/90 overflow-hidden group">
+            
+            <!-- Ambient Backdrop Glow -->
+            <div class="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Top Stage Bar: Slide Number & Status -->
+            <div class="flex items-center justify-between text-xs text-slate-400 z-10">
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="font-mono uppercase text-slate-300 tracking-wider">AULA VIRTUAL EN VIVO</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="slide-indicator" class="font-mono bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700 text-slate-300">Parte 1 de 3</span>
+              </div>
+            </div>
+
+            <!-- Central Video Lesson Content (Dynamic Slide) -->
+            <div id="stage-slide-content" class="my-6 z-10 transition-all duration-300">
+              <!-- Dynamically populated with title, punchy thesis, key visual highlight and narration script -->
+            </div>
+
+            <!-- Slide Thumbnails / Mini-steps navigation inside the video -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800/70 z-10">
+              <div id="slide-dots-container" class="flex items-center gap-2">
+                <!-- Dots generated in JS -->
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <button id="btn-slide-prev" class="px-3 py-1 text-xs rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex items-center gap-1 disabled:opacity-40">
+                  &larr; Anterior
+                </button>
+                <button id="btn-slide-next" class="px-3 py-1 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-all shadow-sm shadow-indigo-600/30 flex items-center gap-1">
+                  Siguiente &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIDEO CONTROLS TIMELINE BAR (Netflix/YouTube Player Bar Style) -->
+          <div class="bg-[#0b0e17] px-4 py-3 border-b border-slate-800 flex flex-col gap-2">
+            <!-- Scrubber / Timeline Progress -->
+            <div class="relative w-full h-1.5 bg-slate-800 rounded-full overflow-hidden cursor-pointer group" id="video-scrubber">
+              <div id="video-scrubber-progress" class="h-full bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-400 w-1/3 rounded-full transition-all duration-300"></div>
+            </div>
+
+            <!-- Play Controls & Tools -->
+            <div class="flex items-center justify-between text-xs text-slate-300">
+              <div class="flex items-center gap-3">
+                <button id="btn-play-pause" class="w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center text-white transition-all shadow-md shadow-indigo-600/30">
+                  <svg id="icon-play" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                  <svg id="icon-pause" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                </button>
+                <span id="player-time-display" class="font-mono text-slate-400">01:15 / 03:45</span>
+                
+                <button id="btn-restart-lesson" title="Reiniciar explicación" class="text-slate-400 hover:text-slate-200">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </button>
+              </div>
+
+              <!-- Speed & Audio Controls -->
+              <div class="flex items-center gap-3">
+                <span class="text-slate-500 hidden sm:inline">Velocidad:</span>
+                <select id="select-speed" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-0.5 text-xs font-mono focus:outline-none focus:border-indigo-500">
+                  <option value="1">1.0x</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                </select>
+
+                <button id="btn-toggle-fullscreen" class="text-slate-400 hover:text-white p-1 rounded" title="Pantalla Completa">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- INTERACTIVE MULTI-TAB WORKSPACE (Terminal, Architecture Graph, Code Inspector) -->
+          <div class="bg-[#0e1422] p-4 md:p-6">
+            
+            <!-- Navigation Tabs for deep learning -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <div class="flex items-center gap-2 overflow-x-auto">
+                <button class="tab-btn active px-3.5 py-1.5 rounded-lg font-medium text-xs border transition-all bg-indigo-900/60 border-indigo-700 text-indigo-200 shadow-sm" data-tab="tab-theory">
+                  📖 Teoría &amp; Transcripción
+                </button>
+                <button class="tab-btn px-3.5 py-1.5 rounded-lg font-medium text-xs border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all" data-tab="tab-terminal">
+                  💻 Terminal Simulada (PowerShell)
+                </button>
+                <button class="tab-btn px-3.5 py-1.5 rounded-lg font-medium text-xs border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all" data-tab="tab-graph">
+                  🕸️ Grafo de Nodos &amp; Estados
+                </button>
+                <button class="tab-btn px-3.5 py-1.5 rounded-lg font-medium text-xs border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all" data-tab="tab-code">
+                  📑 Contratos &amp; Código Real
+                </button>
+              </div>
+
+              <span class="text-[11px] font-mono text-slate-500 hidden md:inline">Laboratorio Guiado</span>
+            </div>
+
+            <!-- TAB 1: THEORY & NARRATION TRANSCRIPT -->
+            <div id="tab-theory" class="tab-content space-y-4">
+              <div class="prose prose-invert max-w-none text-sm text-slate-300 leading-relaxed" id="session-full-text">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- TAB 2: INTERACTIVE POWERSHELL TERMINAL -->
+            <div id="tab-terminal" class="tab-content hidden space-y-4">
+              <div class="flex items-center justify-between">
+                <p class="text-xs text-slate-400">Prueba los comandos exactos descritos en la documentación del repositorio:</p>
+                <span class="text-[10px] font-mono bg-slate-800 text-cyan-400 px-2 py-0.5 rounded border border-slate-700">Windows PowerShell</span>
+              </div>
+
+              <!-- Terminal Box -->
+              <div class="bg-[#05070c] border border-slate-800 rounded-xl p-4 font-mono text-xs shadow-inner">
+                <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800/80 text-slate-500">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                  </div>
+                  <span id="terminal-pwd" class="text-slate-400 text-[11px]">PS C:\Users\criss\Desktop\Claude\BL_Loops</span>
+                  <button id="btn-clear-terminal" class="hover:text-slate-300 text-[11px]">Limpiar</button>
+                </div>
+
+                <!-- Terminal Output Buffer -->
+                <div id="terminal-history" class="space-y-2 max-h-64 overflow-y-auto pr-2 text-slate-300">
+                  <div class="text-slate-500"># Simulador didáctico de comandos de BL_Loops</div>
+                  <div class="text-slate-500"># Haz clic en los comandos sugeridos abajo para ejecutarlos en tiempo real.</div>
+                </div>
+
+                <!-- Terminal Command Suggestion Buttons -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap gap-2" id="terminal-actions-container">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: VISUAL GRAPH OF NODES & STATES -->
+            <div id="tab-graph" class="tab-content hidden space-y-4">
+              <div class="flex items-center justify-between text-xs">
+                <p class="text-slate-400">Inspecciona cómo cambian los estados visuales en los laboratorios BL_Loops:</p>
+                <div class="flex items-center gap-3 font-mono text-[11px]">
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-500"></span> idle</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> queued</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> running</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> done</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> failed</span>
+                </div>
+              </div>
+
+              <!-- Interactive Node Graph Canvas -->
+              <div id="graph-interactive-container" class="bg-[#050810] border border-slate-800 rounded-xl p-6 min-h-[260px] flex items-center justify-center relative overflow-hidden">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 4: CODE & CONTRACT INSPECTOR -->
+            <div id="tab-code" class="tab-content hidden space-y-4">
+              <div class="flex items-center justify-between">
+                <span id="code-file-title" class="text-xs font-mono text-indigo-300 font-semibold">contracts.py</span>
+                <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Lectura Canónica</span>
+              </div>
+              <pre class="bg-[#05070d] border border-slate-800 rounded-xl p-4 font-mono text-xs overflow-x-auto text-slate-300 max-h-96 leading-relaxed"><code id="code-snippet-box"># Código cargado según la sesión</code></pre>
+            </div>
+
+          </div>
+
+          <!-- CHECKPOINT QUIZ DRAWER (Validation of understanding) -->
+          <div class="border-t border-slate-800 bg-[#0d121c] p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-md bg-violet-600/30 border border-violet-500/40 text-violet-400 flex items-center justify-center font-bold text-xs">?</div>
+                <h3 class="text-sm font-bold text-slate-100">Checkpoint de Aprobación de la Sesión</h3>
+              </div>
+              <span class="text-xs text-slate-400">Responde para desbloquear y registrar la sesión</span>
+            </div>
+
+            <div id="quiz-container" class="space-y-4">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- BOTTOM STAGE CONTROLS (Next / Prev Session Buttons) -->
+          <div class="bg-[#0a0e17] px-6 py-4 border-t border-slate-800/80 flex items-center justify-between">
+            <button id="btn-session-prev" class="px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center gap-2">
+              &larr; Sesión Anterior
+            </button>
+
+            <button id="btn-session-next" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2">
+              Siguiente Sesión &rarr;
+            </button>
+          </div>
+
+        </div>
+
+        <!-- RECAP CARDS / FOOTER NOTES -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
+            <div class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+              <span>🛡️</span> Principio de Cero Egress
+            </div>
+            <p class="text-xs text-slate-400">Ollama se ejecuta en loopback (`127.0.0.1:11434`). Ningún dato, prompt o archivo sale hacia internet.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
+            <div class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <span>📦</span> Aislamiento con uv
+            </div>
+            <p class="text-xs text-slate-400">Cada laboratorio posee su `.venv` y su `pyproject.toml` propio. Se pueden copiar fuera del repo sin romper nada.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
+            <div class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <span>📊</span> Trazas Sanitizadas
+            </div>
+            <p class="text-xs text-slate-400">Las ejecuciones exportan JSONL con eventos y métricas de latencia, pero sin el texto sensible de los prompts.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- SCRIPT DATABASE & LOGIC -->
+  <script>
+    // FULL MASTERCLASS DATA (Extracted precisely from Cristrva1/BL_Loops)
+    const COURSE_DATA = [
+      {
+        phaseId: 1,
+        phaseTitle: "Fase 1: Fundamentos, Reglas y Arquitectura",
+        description: "El manifiesto de IA 100% local, aislamiento estricto y orden documental canónico.",
+        sessions: [
+          {
+            id: "1.1",
+            title: "El Manifiesto de IA Local y los Cinco Movimientos",
+            duration: "12 min",
+            slides: [
+              {
+                title: "¿Qué es y qué NO es BL_Loops?",
+                punch: "BL_Loops no es un monolito ni un juguete web: es una escuela técnica de laboratorios aislados, visuales y reproducibles.",
+                highlight: "Regla #1: 100% IA Local vía Ollama. Cero llamadas a APIs de pago, cero telemetría no autorizada y cero dependencias ocultas.",
+                script: "Bienvenidos a la primera sesión de BL_Loops. Este repositorio fue diseñado bajo un principio inquebrantable: aprender cómo funcionan los agentes de inteligencia artificial construyéndolos desde cero sobre hardware propio, utilizando Ollama en loopback. Cada laboratorio es una aplicación independiente que puedes copiar fuera del proyecto sin llevarte código de los demás."
+              },
+              {
+                title: "El Contrato Didáctico en Cinco Movimientos",
+                punch: "Cada tema se enseña en cinco pasos exactos para garantizar aprendizaje real sin trucos decorativos.",
+                highlight: "1. Explicación → 2. Ejemplo guiado → 3. Ejercicio → 4. Experimento comparable → 5. Evaluación y reflexión.",
+                script: "Para que un laboratorio se considere aprobado en BL_Loops, debe cumplir cinco movimientos didácticos: primero una explicación sin jerga innecesaria; segundo, un ejemplo ejecutable con datos sintéticos; tercero, un ejercicio con respuesta verificable; cuarto, un experimento A B comparable; y quinto, una evaluación que emita un archivo JSONL con métricas reales."
+              },
+              {
+                title: "Aislamiento Radical de Entornos",
+                punch: "No existe una venv compartida en la raíz. Cada carpeta gobierna su propio entorno.",
+                highlight: "Cada laboratorio tiene su pyproject.toml, uv.lock, .venv exclusiva y su propia base SQLite en .local/.",
+                script: "Un error habitual en proyectos de agentes es crear un entorno global compartido. BL_Loops prohíbe esto categóricamente. Cada laboratorio utiliza uv para resolver dependencias de forma reproducible y aislada. Lo único que comparten en el workspace es el archivo de variables .env de la raíz."
+              }
+            ],
+            theory: `
+              <h4>El Propósito Arquitectónico</h4>
+              <p>BL_Loops responde con evidencia reproducible preguntas críticas del desarrollo con IA:</p>
+              <ul>
+                <li><strong>¿Qué convierte a un modelo en un agente?</strong> La capacidad de observar, decidir de forma determinista, ejecutar herramientas bajo contratos estrictos y detenerse.</li>
+                <li><strong>¿Por qué local?</strong> Porque un endpoint en loopback garantiza privacidad total, cero costo recurrente por token y permite medir con precisión la latencia de hardware real (CPU, RAM, VRAM).</li>
+                <li><strong>Aislamiento estricto:</strong> Ningún laboratorio puede importar módulos ni bases de datos de otro laboratorio. Si copias <code>02-single-agent</code> a tu escritorio, funcionará de manera 100% autónoma.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops",
+              actions: [
+                {
+                  cmd: "git status --short",
+                  output: "?? .env\n M docs/PLAN_MAESTRO_DIDACTICO.md\n# git status es solo observación de trabajo preservado."
+                },
+                {
+                  cmd: "Test-Path -LiteralPath .env",
+                  output: "True\n# El contrato público existe. Los secretos reales nunca se imprimen."
+                },
+                {
+                  cmd: "Invoke-RestMethod http://127.0.0.1:11434/api/tags | Select-Object -ExpandProperty models | Select-Object name",
+                  output: "name\n----\nqwen3.5:4b\nqwen3.5:9b\ngemma4:e4b\nqwen3-embedding:latest"
+                }
+              ]
+            },
+            graph: {
+              type: "linear",
+              nodes: [
+                { id: "A", name: "Aprender Conceptos", state: "done" },
+                { id: "B", name: "Crear Prompts & Specs", state: "done" },
+                { id: "C", name: "Agente Local", state: "running" },
+                { id: "D", name: "Nodos & Trazas", state: "queued" },
+                { id: "E", name: "RAG & MCP", state: "idle" },
+                { id: "F", name: "JSONL & Comparador", state: "idle" }
+              ]
+            },
+            code: {
+              file: "AGENTS.md (Reglas Canónicas)",
+              content: `# Principios del repositorio BL_Loops
+- Todo debe ser didáctico, visual y progresivo.
+- Cada laboratorio es una aplicación autónoma y copiable. No puede importar código, bases de datos ni servicios de otro laboratorio.
+- La única excepción compartida en el workspace es el .env global de configuración.
+- Todo laboratorio debe funcionar y evaluarse contra la API local de Ollama.
+- No se permiten fallbacks silenciosos a APIs pagadas o modelos cloud.
+- Rutas relativas como .local/data se resuelven contra la raíz del laboratorio activo.`
+            },
+            quiz: {
+              question: "¿Cuál es la regla de oro sobre las dependencias y entornos virtuales en BL_Loops?",
+              options: [
+                "Se crea un único entorno virtual en la raíz para ahorrar espacio en disco.",
+                "Cada laboratorio tiene su propio pyproject.toml, uv.lock y .venv aislada.",
+                "Los laboratorios comparten una base de datos central PostgreSQL en Docker.",
+                "Se permite consultar OpenAI como fallback si Ollama está apagado."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! Cada laboratorio es completamente autónomo y copiable, con su propio pyproject.toml y .venv gestionados con uv."
+            }
+          },
+          {
+            id: "1.2",
+            title: "Jerarquía Documental y Orden de Autoridad",
+            duration: "10 min",
+            slides: [
+              {
+                title: "No todo Markdown tiene la misma autoridad",
+                punch: "BL_Loops distingue entre la intención humana, las reglas canónicas, las decisiones de arquitectura y el corpus de estudio.",
+                highlight: "Jerarquía: 1. sistema.md + Usuario → 2. AGENTS.md → 3. PLAN_MAESTRO_DIDACTICO.md → 4. Prompts/ (corpus) → 5. docs/",
+                script: "En muchos proyectos, un agente de código lee un prompt antiguo y lo confunde con una regla obligatoria. En BL_Loops existe una jerarquía estricta: en la cima manda sistema.md y las decisiones del usuario; después las reglas canónicas de AGENTS.md; luego el plan maestro; y finalmente la carpeta Prompts, que solo sirve como material de estudio, nunca como código ejecutable."
+              },
+              {
+                title: "Separación entre Aprendizaje y Runtime",
+                punch: "El código ejecutable jamás debe depender de la carpeta de documentación humana.",
+                highlight: "El runtime vive en src/ o backend/. Las guías humanas viven en docs/humano/. Una prueba automatizada verifica esta separación.",
+                script: "Una de las innovaciones de BL_Loops es la prueba de test_project_separation.py. Esta prueba escanea el código Python para asegurar que jamás importe archivos de docs/humano/. El material pedagógico explica el sistema a las personas, pero el runtime solo opera con contratos y código puro."
+              }
+            ],
+            theory: `
+              <h4>La Pirámide de Autoridad Documental</h4>
+              <p>Para evitar contradicciones y regresiones:</p>
+              <ol>
+                <li><strong><code>docs/humano/sistema.md</code>:</strong> Fuente primaria. Contiene el deseo explícito original del creador humano.</li>
+                <li><strong><code>AGENTS.md</code> (raíz):</strong> Reglas operativas que gobiernan a cualquier agente de código (Codex, Antigravity, Claude Code).</li>
+                <li><strong><code>docs/PLAN_MAESTRO_DIDACTICO.md</code>:</strong> Especificación de fases, criterios de aceptación y contratos JSONL.</li>
+                <li><strong><code>menu_portable/REPO_MENU.md</code>:</strong> Catálogo curado de 212 repositorios externos preseleccionados.</li>
+                <li><strong><code>Prompts/</code>:</strong> Corpus de referencia. Se estudia pero nunca se ejecuta como instrucción directa.</li>
+              </ol>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops",
+              actions: [
+                {
+                  cmd: "Get-ChildItem -Directory",
+                  output: "01-prompt-agent-factory\n02-single-agent\n06-naive-rag\n07-vector-rag\n09-agentic-rag\n13-sales-knowledge-curator\n14-local-code-hermes\ndocs\nmenu_portable"
+                },
+                {
+                  cmd: "pytest 01-prompt-agent-factory/backend/tests/test_project_separation.py",
+                  output: "==== 1 passed in 0.04s ====\n# PASSED: El runtime no contiene importaciones de docs/humano/"
+                }
+              ]
+            },
+            graph: {
+              type: "hierarchy",
+              nodes: [
+                { id: "U", name: "Usuario / sistema.md", state: "done" },
+                { id: "R", name: "AGENTS.md (Reglas)", state: "done" },
+                { id: "P", name: "Plan Maestro", state: "running" },
+                { id: "L", name: "Laboratorios (Runtime)", state: "waiting" },
+                { id: "D", name: "docs/humano (Pedagogía)", state: "idle" }
+              ]
+            },
+            code: {
+              file: "backend/tests/test_project_separation.py",
+              content: `def test_runtime_does_not_import_human_docs():
+    """Garantiza que el código no dependa de la carpeta pedagógica."""
+    src_dir = Path(__file__).resolve().parents[1] / "src"
+    for py_file in src_dir.rglob("*.py"):
+        content = py_file.read_text(encoding="utf-8")
+        assert "docs.humano" not in content, f"Infracción en {py_file}"
+        assert "docs/humano" not in content, f"Infracción en {py_file}"`
+            },
+            quiz: {
+              question: "Si encuentras una propuesta técnica en la carpeta 'Prompts/', ¿qué autoridad tiene?",
+              options: [
+                "Es una orden directa que debe implementarse inmediatamente.",
+                "Tiene mayor prioridad que el archivo AGENTS.md.",
+                "Es solo material de estudio o corpus; no es vinculante ni ejecutable por sí sola.",
+                "Debe convertirse en una variable de entorno en .env."
+              ],
+              correct: 2,
+              feedback: "¡Correcto! Prompts/ es un corpus de aprendizaje, no un conjunto de instrucciones ejecutables."
+            }
+          },
+          {
+            id: "1.3",
+            title: "Preparación del Entorno Local y Escalera de Modelos",
+            duration: "15 min",
+            slides: [
+              {
+                title: "Hardware y Modelos Verificados en Ollama",
+                punch: "La inferencia se realiza 100% en local usando modelos optimizados para tareas específicas.",
+                highlight: "Escalera: qwen3.5:4b (rápido/RAG), qwen3.5:9b (razonamiento), gemma4:e4b (chat equilibrado) y qwen3-embedding.",
+                script: "Para ejecutar los laboratorios no necesitas tarjetas gráficas de centro de datos. BL_Loops define una escalera de modelos pequeña y muy rápida: Gemma 4 para agentes de conversación general, Qwen 3.5 de 4 y 9 billones para extracción y RAG, y Qwen3 Embedding para vectores semánticos."
+              },
+              {
+                title: "El Gestor uv y PowerShell",
+                punch: "uv resuelve paquetes de Python en milisegundos y garantiza reproducibilidad absoluta mediante uv.lock.",
+                highlight: "Comandos clave: 'uv sync --all-groups' para instalar, 'uv run <app>' para ejecutar sin activar manualmente el venv.",
+                script: "El repositorio utiliza uv en lugar de pip o conda. uv crea entornos virtuales instantáneos y utiliza una caché global para no descargar dos veces las mismas librerías, manteniendo el aislamiento de cada proyecto."
+              }
+            ],
+            theory: `
+              <h4>Configuración del Hardware y Modelos</h4>
+              <p>Ollama debe estar iniciado y accesible en <code>http://127.0.0.1:11434</code>:</p>
+              <ul>
+                <li><code>qwen3.5:4b</code>: Modelo ligero ideal para extracción determinista de datos y síntesis en RAG.</li>
+                <li><code>gemma4:e4b</code>: Modelo conversacional con excelente adherencia a instrucciones para el chat del agente único.</li>
+                <li><code>qwen3-embedding:latest</code>: Generador de vectores semánticos para búsqueda híbrida.</li>
+                <li><code>local-code-9b-64k</code>: Modelo con ventana extendida de contexto para evaluación de código en Docker.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops",
+              actions: [
+                {
+                  cmd: "uv --version; node --version; ollama --version",
+                  output: "uv 0.4.18\nv20.14.0\nollama version is 0.5.1"
+                },
+                {
+                  cmd: "ollama list",
+                  output: "NAME                     ID              SIZE    MODIFIED\nqwen3.5:4b              a1b2c3d4e5f6    2.6 GB  2 days ago\ngemma4:e4b              f6e5d4c3b2a1    2.8 GB  3 days ago\nqwen3-embedding:latest  123456789abc    1.2 GB  1 day ago"
+                }
+              ]
+            },
+            graph: {
+              type: "linear",
+              nodes: [
+                { id: "OLL", name: "Ollama (127.0.0.1:11434)", state: "done" },
+                { id: "MOD", name: "Pesos en Disco (D:/ollama)", state: "done" },
+                { id: "UV", name: "uv Package Engine", state: "done" },
+                { id: "VENV", name: ".venv Local Aislada", state: "done" }
+              ]
+            },
+            code: {
+              file: ".env.example (Contrato de Entorno)",
+              content: `# Configuración compartida de BL_Loops
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+DEFAULT_CHAT_MODEL=gemma4:e4b
+DEFAULT_EXTRACTION_MODEL=qwen3.5:4b
+DEFAULT_EMBEDDING_MODEL=qwen3-embedding:latest
+DATA_ROOT=./.local/data`
+            },
+            quiz: {
+              question: "¿Dónde se guardan los modelos y pesos pesados de Ollama según el repositorio?",
+              options: [
+                "Commiteados dentro del repositorio Git en la carpeta models/.",
+                "En D:/ollama o la ruta local de Ollama fuera del control de versiones.",
+                "Se descargan en cada ejecución desde HuggingFace a la carpeta tmp.",
+                "Se transmiten por streaming desde los servidores de Google."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! Los modelos pesados viven fuera de Git en el disco local (ej. D:/ollama) para mantener el repositorio ligero y reproducible."
+            }
+          }
+        ]
+      },
+      {
+        phaseId: 2,
+        phaseTitle: "Fase 2: Contratos Estrictos y Agente Único",
+        description: "De la intención humana no estructurada a especificaciones Pydantic y el chat con memoria volátil.",
+        sessions: [
+          {
+            id: "2.1",
+            title: "Laboratorio 01 — Fábrica de Prompts, Agentes y Skills",
+            duration: "18 min",
+            slides: [
+              {
+                title: "Convertir Intenciones en Especificaciones Formales",
+                punch: "Antes de escribir código o invocar un LLM, debes formalizar el contrato que gobernará a tu agente.",
+                highlight: "Artefactos: PromptSpec (rol, tarea, restricciones), AgentSpec (memoria, tools) y SkillSpec (capacidades).",
+                script: "El Laboratorio 01 aborda una pregunta crítica: ¿Cómo pasamos de una idea vaga como 'quiero un agente de ventas' a una especificación que una máquina pueda validar? La fábrica utiliza contratos estrictos en Pydantic y un dashboard en React Flow para analizar vacíos de lógica de forma determinista."
+              },
+              {
+                title: "Análisis Determinista sin Alucinaciones",
+                punch: "La primera fase de validación no llama a ningún modelo; usa reglas de contrato infalibles.",
+                highlight: "Si el prompt no declara formato de salida, variables de entrada o límites de error, el validador emite preguntas guía automáticas.",
+                script: "Observa un detalle fascinante: la Parte 1 de este laboratorio es 100% determinista. No llama a Ollama para evaluar el prompt; usa validadores sintácticos de Python. De este modo aprendes a garantizar la solidez de un agente antes de gastar recursos de cómputo en inferencia."
+              }
+            ],
+            theory: `
+              <h4>Arquitectura del Laboratorio 01</h4>
+              <p>Ubicación: <code>01-prompt-agent-factory/</code></p>
+              <ul>
+                <li><strong>Backend:</strong> FastAPI + Pydantic v2. Expone rutas REST como <code>/api/v1/analyze</code> y <code>/api/v1/build</code>.</li>
+                <li><strong>Frontend:</strong> React 18 + Vite + React Flow para visualización interactiva del grafo de nodos.</li>
+                <li><strong>Exportación:</strong> Genera esquemas JSON validados en <code>.local/exports/</code> listos para ser consumidos por otros proyectos.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\01-prompt-agent-factory",
+              actions: [
+                {
+                  cmd: "uv run uvicorn prompt_agent_factory.main:app --host 127.0.0.1 --port 8011",
+                  output: "INFO:     Uvicorn running on http://127.0.0.1:8011 (Press CTRL+C to quit)\nINFO:     Application startup complete."
+                },
+                {
+                  cmd: "Invoke-RestMethod http://127.0.0.1:8011/api/v1/health | ConvertTo-Json",
+                  output: "{\n  \"status\": \"healthy\",\n  \"llm_used\": false,\n  \"deterministic\": true\n}"
+                }
+              ]
+            },
+            graph: {
+              type: "pipeline",
+              nodes: [
+                { id: "INT", name: "Intención Humana", state: "done" },
+                { id: "VAL", name: "Validador Pydantic", state: "running" },
+                { id: "SPEC", name: "PromptSpec / AgentSpec", state: "queued" },
+                { id: "EXP", name: "Exportador JSONL", state: "idle" }
+              ]
+            },
+            code: {
+              file: "01-prompt-agent-factory/backend/src/prompt_agent_factory/contracts.py",
+              content: `class PromptSpec(BaseModel):
+    id: str = Field(..., description="Identificador único")
+    name: str = Field(..., min_length=3)
+    target_role: str
+    instruction: str = Field(..., min_length=20)
+    input_variables: list[str] = Field(default_factory=list)
+    output_format: str
+    constraints: list[str] = Field(default_factory=list)
+    stop_conditions: list[str] = Field(default_factory=list)`
+            },
+            quiz: {
+              question: "¿Por qué la Parte 1 de la Fábrica de Prompts no llama a Ollama por defecto?",
+              options: [
+                "Porque Ollama no soporta modelos en Windows 11.",
+                "Para enseñar que la validación estructural y los contratos deben ser deterministas y confiables.",
+                "Porque los esquemas Pydantic solo se pueden generar usando APIs de nube.",
+                "Para ahorrar espacio en la base de datos SQLite."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! La verificación de contratos es determinista para asegurar que el agente esté bien especificado antes de invocar la IA."
+            }
+          },
+          {
+            id: "2.2",
+            title: "Laboratorio 02 — Agente Único Conversacional (CLI)",
+            duration: "14 min",
+            slides: [
+              {
+                title: "¿Qué es lo mínimo que necesita un Agente?",
+                punch: "Un agente no necesita frameworks monstruosos: necesita bucle de turnos, memoria en RAM y comunicación HTTP limpia.",
+                highlight: "02-single-agent implementa un chat conversacional completo usando exclusivamente la librería estándar de Python.",
+                script: "En el Laboratorio 02 desmitificamos la palabra 'agente'. ¿Qué hace a un agente? Un ciclo de turnos interactivo, un historial de mensajes preservado en memoria volátil y una conexión directa al endpoint de Ollama. Cero librerías externas para entender la mecánica esencial."
+              },
+              {
+                title: "El Ciclo de Turnos y Memoria de Sesión",
+                punch: "Cada nuevo mensaje envía el historial completo formateado para mantener la coherencia contextual.",
+                highlight: "Comando en terminal: 'uv run single-agent'. Al escribir '/salir' o presionar Ctrl+C, la sesión finaliza y exporta la traza.",
+                script: "Al conversar con gemma4:e4b mediante este CLI, puedes comprobar cómo recuerda datos anteriores de la misma sesión. Toda la conversación vive en RAM y al finalizar se genera una traza JSONL sanitizada en la carpeta local."
+              }
+            ],
+            theory: `
+              <h4>Mecánica Interna de 02-single-agent</h4>
+              <p>Ubicación: <code>02-single-agent/src/single_agent/</code></p>
+              <ul>
+                <li><strong>Cliente Ollama:</strong> Usa <code>urllib.request</code> nativo hacia <code>/api/chat</code>.</li>
+                <li><strong>Gestor de contexto:</strong> Mantiene una lista de objetos <code>{"role": "user"|"assistant", "content": "..."}</code>.</li>
+                <li><strong>Control de errores:</strong> Detecta si Ollama está apagado, si el modelo no está descargado o si la conexión falla, mostrando mensajes claros al operador humano.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\02-single-agent",
+              actions: [
+                {
+                  cmd: "uv sync --all-groups",
+                  output: "Audited 1 package in 0.02s\n# Entorno virtual 02-single-agent/.venv sincronizado."
+                },
+                {
+                  cmd: "uv run single-agent",
+                  output: "--- Agente Local Activo (gemma4:e4b) ---\nTu > Recuerda que el proyecto clave es Orion.\n[procesando] humano -> Ollama -> agente\nAgente > Entendido, he registrado que el proyecto clave es Orion."
+                },
+                {
+                  cmd: "uv run single-agent-validate",
+                  output: "JSONL valido: 1 sesion encontrada en .local/runs/\nEventos consecutivos: 6 | Errores: 0 | Salida sanitaria confirmada."
+                }
+              ]
+            },
+            graph: {
+              type: "loop",
+              nodes: [
+                { id: "USR", name: "Usuario CLI", state: "done" },
+                { id: "CTX", name: "Contexto (RAM)", state: "running" },
+                { id: "OLL", name: "Ollama (gemma4)", state: "waiting" },
+                { id: "SAN", name: "Log Sanitizado", state: "idle" }
+              ]
+            },
+            code: {
+              file: "02-single-agent/src/single_agent/cli.py",
+              content: `def chat_loop(client: OllamaClient, config: Config):
+    history: list[dict[str, str]] = []
+    print("Escribe /salir para terminar.")
+    while True:
+        user_input = input("Tu > ").strip()
+        if user_input in ("/salir", "/exit"):
+            break
+        history.append({"role": "user", "content": user_input})
+        response = client.chat(messages=history)
+        history.append({"role": "assistant", "content": response.content})
+        print(f"Agente > {response.content}")`
+            },
+            quiz: {
+              question: "En 02-single-agent, ¿dónde se conserva el historial de la conversación durante la sesión?",
+              options: [
+                "En una tabla remota de Firebase en la nube.",
+                "En la memoria volátil (RAM) del proceso durante la ejecución.",
+                "En un archivo de texto plano con los datos de las contraseñas en Git.",
+                "En el disco duro central de Windows en System32."
+              ],
+              correct: 1,
+              feedback: "¡Correcto! La conversación vive en RAM durante la sesión y al cerrarse se exporta una traza de auditoría sanitaria sin el texto crudo confidencial."
+            }
+          },
+          {
+            id: "2.3",
+            title: "Auditoría Sanitaria y Trazas JSONL",
+            duration: "11 min",
+            slides: [
+              {
+                title: "La Regla de Oro: Auditar sin Fugas",
+                punch: "Una traza de producción debe auditar tiempos, tokens y estados SIN filtrar el contenido confidencial de los usuarios.",
+                highlight: "Los archivos JSONL registran eventos: run.started, step.completed, run.completed con hashes y latencias.",
+                script: "Cuando despliegas agentes en empresas o en entornos de alta privacidad, no puedes volcar las conversaciones completas en los logs. BL_Loops introduce el estándar de traza sanitaria: guardamos identificadores de sesión, marcas de tiempo, tokens consumidos y códigos de estado, garantizando trazabilidad sin vulnerar la privacidad."
+              }
+            ],
+            theory: `
+              <h4>El Esquema run-event.schema.json</h4>
+              <p>Cada laboratorio exporta trazas compatibles con el futuro evaluador central:</p>
+              <ul>
+                <li><strong><code>run_id</code>:</strong> UUID único de la corrida.</li>
+                <li><strong><code>sequence</code>:</strong> Contador monotónico estricto (0, 1, 2, ...).</li>
+                <li><strong><code>event_type</code>:</strong> <code>run.started</code>, <code>node.entered</code>, <code>tool.invoked</code>, <code>run.completed</code>.</li>
+                <li><strong><code>metrics</code>:</strong> Latencia en milisegundos, prompt_tokens, completion_tokens.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\02-single-agent",
+              actions: [
+                {
+                  cmd: "Get-Content .local/runs/*.jsonl -TotalCount 2",
+                  output: '{"run_id":"c1a2","sequence":0,"event":"run.started","timestamp":"2026-08-30T10:00:00Z"}\n{"run_id":"c1a2","sequence":1,"event":"turn.completed","latency_ms":842}'
+                }
+              ]
+            },
+            graph: {
+              type: "linear",
+              nodes: [
+                { id: "A", name: "run.started", state: "done" },
+                { id: "B", name: "turn.processed", state: "done" },
+                { id: "C", name: "metrics.recorded", state: "done" },
+                { id: "D", name: "run.completed", state: "done" }
+              ]
+            },
+            code: {
+              file: "02-single-agent/contracts/run-event.schema.json",
+              content: `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunEvent",
+  "type": "object",
+  "required": ["run_id", "sequence", "event_type", "timestamp"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "event_type": { "type": "string" },
+    "latency_ms": { "type": "number" }
+  }
+}`
+            },
+            quiz: {
+              question: "¿Por qué las trazas JSONL sanitizadas no guardan el texto completo de las preguntas del usuario?",
+              options: [
+                "Porque JSONL no soporta caracteres con acentos ni espacios.",
+                "Para proteger la privacidad y evitar almacenar secretos en logs de auditoría.",
+                "Porque Ollama borra automáticamente el texto después de responder.",
+                "Para no ocupar más de 1 kilobyte en el disco duro."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! El principio de privacidad de BL_Loops exige auditar rendimiento y estados sin comprometer los datos del usuario."
+            }
+          }
+        ]
+      },
+      {
+        phaseId: 3,
+        phaseTitle: "Fase 3: La Escalera RAG (Léxico a Agéntico)",
+        description: "Comparativa empírica: SQLite FTS5 vs. Vectorial Híbrido RRF vs. Agente con Tool Calling.",
+        sessions: [
+          {
+            id: "3.1",
+            title: "Laboratorio 06 — RAG Léxico con SQLite FTS5",
+            duration: "16 min",
+            slides: [
+              {
+                title: "¿Cuándo es suficiente una búsqueda por palabras clave?",
+                punch: "No todo necesita embeddings: SQLite FTS5 con BM25 es ultrarrápido, determinista y corre en cualquier máquina.",
+                highlight: "06-naive-rag importa archivos Markdown, indexa por texto completo y exige citas obligatorias [S1], [S2].",
+                script: "Llegamos a una de las comparaciones estrella de BL_Loops: la escalera RAG. Empezamos en el Laboratorio 06 con RAG léxico puro. Usamos la extensión FTS5 de SQLite. El sistema busca los fragmentos exactos que coinciden con las palabras de la pregunta y se los envía a qwen3.5:4b obligándolo a responder con citas."
+              },
+              {
+                title: "El Contrato de Cita Estricta [S#]",
+                punch: "Si el modelo no cita las fuentes recuperadas, el validador emite una advertencia de fidelidad.",
+                highlight: "Ejemplo: 'Según SPIN Selling, el dolor se explora con preguntas de implicación [S1].'",
+                script: "Un peligro clásico en RAG son las alucinaciones no rastreables. En este laboratorio, el prompt del sistema prohíbe responder sin asociar cada afirmación a una etiqueta de fuente entre corchetes, indicando el archivo exacto y el rango de líneas."
+              }
+            ],
+            theory: `
+              <h4>Paso a Paso del RAG Léxico</h4>
+              <p>Ubicación: <code>06-naive-rag/</code></p>
+              <ol>
+                <li><strong>Indexación:</strong> Lee documentos <code>.md</code> de libros, divide en chunks con solapamiento y guarda en SQLite con tabla virtual <code>USING fts5(content)</code>.</li>
+                <li><strong>Recuperación:</strong> Ejecuta consulta <code>SELECT ... FROM chunks_fts WHERE content MATCH :query ORDER BY rank LIMIT 3</code>.</li>
+                <li><strong>Aumento (Augment):</strong> Inyecta los chunks en el system prompt con prefijos <code>[S1] archivo.md:L10-L45</code>.</li>
+                <li><strong>Generación:</strong> <code>qwen3.5:4b</code> elabora la respuesta citando <code>[S#]</code>.</li>
+              </ol>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\06-naive-rag",
+              actions: [
+                {
+                  cmd: "uv run naive-rag index --source docs/humano/Libros",
+                  output: "Indexando archivos Markdown...\nDocumentos procesados: 48 | Chunks generados: 312\nBase SQLite actualizada: .local/data/naive_rag.db"
+                },
+                {
+                  cmd: 'uv run naive-rag ask "¿Qué explica SPIN Selling sobre la venta consultiva?"',
+                  output: "[1/3 buscar] queued -> running -> done | 3 fragmentos\n[2/3 aumentar] running -> done | 3 fuentes\n[3/3 generar] waiting -> done | 920 ms\nRespuesta > La venta consultiva se centra en hacer preguntas de situación y problema [S1]...\nFuentes recuperadas:\n- [S1] ventas/SPIN_Selling.md:L14-L38"
+                }
+              ]
+            },
+            graph: {
+              type: "pipeline",
+              nodes: [
+                { id: "Q", name: "Pregunta del Usuario", state: "done" },
+                { id: "FTS", name: "SQLite FTS5 Match", state: "done" },
+                { id: "CTX", name: "Inyección con [S#]", state: "done" },
+                { id: "LLM", name: "qwen3.5:4b Inferencia", state: "done" }
+              ]
+            },
+            code: {
+              file: "06-naive-rag/src/naive_rag/corpus.py",
+              content: `def search_fts(db: sqlite3.Connection, query: str, limit: int = 3) -> list[Chunk]:
+    sql = """
+        SELECT chunk_id, file_path, start_line, end_line, text, rank
+        FROM chunks_fts
+        WHERE chunks_fts MATCH ?
+        ORDER BY rank
+        LIMIT ?
+    """
+    cursor = db.execute(sql, (sanitize_fts_query(query), limit))
+    return [Chunk(*row) for row in cursor.fetchall()]`
+            },
+            quiz: {
+              question: "¿Qué limitación tiene el RAG léxico puro frente a una búsqueda vectorial?",
+              options: [
+                "No funciona con archivos de texto pequeños.",
+                "Falla si la pregunta utiliza sinónimos o paráfrasis que no coinciden exactamente con las palabras del texto.",
+                "Requiere tarjetas GPU Nvidia de 24 GB de memoria.",
+                "Solo funciona en idioma inglés."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! El RAG léxico busca palabras exactas; si preguntas '¿cómo descubrir la necesidad real?' y el libro habla de 'identificar el dolor implícito', FTS5 puede no encontrarlo."
+            }
+          },
+          {
+            id: "3.2",
+            title: "Laboratorio 07 — RAG Vectorial Híbrido y Fusión RRF",
+            duration: "18 min",
+            slides: [
+              {
+                title: "Semántica + Léxico: Lo Mejor de Dos Mundos",
+                punch: "La búsqueda vectorial comprende el significado, pero el índice léxico garantiza nombres exactos y números.",
+                highlight: "Solución: Reciprocal Rank Fusion (RRF) para combinar los rankings de FTS5 y qwen3-embedding.",
+                script: "El Laboratorio 07 resuelve el problema de los sinónimos mediante embeddings con qwen3-embedding. Pero en vez de reemplazar la búsqueda léxica, las fusiona mediante el algoritmo RRF. Además, implementa un filtro preventivo de ruido que descarta secciones contaminadas o metadatos irrelevantes."
+              },
+              {
+                title: "¿Cómo funciona Reciprocal Rank Fusion (RRF)?",
+                punch: "Combina posiciones en rankings independientes sin importar que las escalas de distancia sean distintas.",
+                highlight: "Fórmula RRF: Score = 1 / (60 + Posicion_FTS) + 1 / (60 + Posicion_Vector)",
+                script: "Calcular la similitud coseno y sumar el score de BM25 directamente es un error común porque sus escalas numéricas no son homogéneas. RRF resuelve esto elegantemente evaluando la posición o rango que cada documento obtuvo en ambos métodos."
+              }
+            ],
+            theory: `
+              <h4>Innovaciones de 07-vector-rag</h4>
+              <p>Ubicación: <code>07-vector-rag/</code></p>
+              <ul>
+                <li><strong>Limpieza de Ruido:</strong> Elimina cabeceras editoriales y avisos de copyright antes de vectorizar (excluyendo 134 secciones de ruido identificadas en el corpus).</li>
+                <li><strong>Almacenamiento:</strong> Guarda los vectores en SQLite utilizando tipos BLOB serializados y calcula la similitud con NumPy.</li>
+                <li><strong>Modo de Ejecución:</strong> Permite comparar en la misma corrida <code>--mode fts</code>, <code>--mode vector</code> y <code>--mode hybrid</code>.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\07-vector-rag",
+              actions: [
+                {
+                  cmd: "uv run vector-rag index --source docs/humano/Libros",
+                  output: "Filtrando secciones contaminadas...\nGenerando 594 embeddings utiles con qwen3-embedding...\nIndice hibrido listo en .local/data/vector_rag.db"
+                },
+                {
+                  cmd: 'uv run vector-rag search --mode hybrid "¿Cómo descubrir la necesidad real sin presionar?"',
+                  output: "[Modo Hibrido RRF Activado]\nTop 1 (Score: 0.032): ventas/Challenger_Sale.md (L88-120) [Coincidencia semantica]\nTop 2 (Score: 0.029): ventas/SPIN_Selling.md (L50-75) [Coincidencia hibrida]"
+                }
+              ]
+            },
+            graph: {
+              type: "fork-join",
+              nodes: [
+                { id: "Q", name: "Pregunta", state: "done" },
+                { id: "FTS", name: "Ruta 1: SQLite FTS5", state: "done" },
+                { id: "VEC", name: "Ruta 2: qwen3-embedding", state: "done" },
+                { id: "RRF", name: "Fusión RRF (Ponderada)", state: "done" },
+                { id: "OUT", name: "Top K Fragmentos", state: "done" }
+              ]
+            },
+            code: {
+              file: "07-vector-rag/src/vector_rag/index.py",
+              content: `def reciprocal_rank_fusion(fts_ranks: list[str], vec_ranks: list[str], k: int = 60) -> list[str]:
+    """Combina dos listas ordenadas sin depender de calibración de puntajes."""
+    scores: dict[str, float] = defaultdict(float)
+    for rank, doc_id in enumerate(fts_ranks):
+        scores[doc_id] += 1.0 / (k + rank + 1)
+    for rank, doc_id in enumerate(vec_ranks):
+        scores[doc_id] += 1.0 / (k + rank + 1)
+    return sorted(scores.keys(), key=lambda d: scores[d], reverse=True)`
+            },
+            quiz: {
+              question: "¿Cuál es la ventaja de usar Reciprocal Rank Fusion (RRF) frente a sumar puntajes directos?",
+              options: [
+                "Evita tener que normalizar y calibrar métricas con escalas incompatibles (BM25 vs. Similitud Coseno).",
+                "Permite descargar modelos de HuggingFace más rápido.",
+                "Duplica la velocidad de inferencia del LLM en Ollama.",
+                "Hace innecesario el uso de memoria RAM."
+              ],
+              correct: 0,
+              feedback: "¡Exacto! RRF suma valores inversos de las posiciones de orden (ranks), haciendo que la fusión sea robusta sin importar la escala matemática de cada buscador."
+            }
+          },
+          {
+            id: "3.3",
+            title: "Laboratorio 09 — RAG Agéntico con Tool Calling",
+            duration: "20 min",
+            slides: [
+              {
+                title: "Del RAG Pasivo al RAG Agéntico",
+                punch: "En RAG clásico inyectas documentos siempre; en RAG Agéntico el modelo DECIDE si necesita buscar.",
+                highlight: "09-agentic-rag implementa un agente de ventas con tool local 'search_sales_library' limitada a 1 llamada.",
+                script: "El salto cualitativo ocurre en el Laboratorio 09. Si saludas al agente diciendo 'Hola', un RAG pasivo buscaría documentos sobre 'Hola' en la base de datos. Un agente de verdad razona: se da cuenta de que es un saludo y responde amablemente sin tocar la base de datos. Solo cuando formula una duda técnica, invoca su herramienta."
+              },
+              {
+                title: "Límites y Control de Autoridad",
+                punch: "Un agente autónomo en producción debe tener políticas de contención estrictas.",
+                highlight: "El runtime autoriza COMO MÁXIMO una llamada a la herramienta y audita la traza sin exponer contenido privado.",
+                script: "Darle herramientas a un modelo sin límites provoca bucles infinitos y costos descontrolados. BL_Loops establece como política de seguridad que el agente tiene un presupuesto máximo de una invocación de búsqueda por turno."
+              }
+            ],
+            theory: `
+              <h4>Patrón de Tool Calling Local</h4>
+              <p>Ubicación: <code>09-agentic-rag/</code></p>
+              <ul>
+                <li><strong>Definición de Tool:</strong> <code>search_sales_library(query: str)</code> con descripción de parámetros en JSON Schema.</li>
+                <li><strong>Inferencia con Tools:</strong> Envía la definición a <code>qwen3.5:4b</code> mediante la API local de Ollama.</li>
+                <li><strong>Interceptación:</strong> Si el modelo emite <code>tool_calls</code>, el runtime ejecuta la función contra SQLite + Embeddings y le devuelve el resultado en un mensaje de rol <code>tool</code>.</li>
+                <li><strong>Respuesta final:</strong> El modelo sintetiza la conclusión citando las fuentes recuperadas.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\09-agentic-rag",
+              actions: [
+                {
+                  cmd: 'uv run sales-agent ask "¿Cómo estructurar una pregunta de implicación?"',
+                  output: "[Paso 1] Modelo evaluando necesidad de herramientas...\n[Paso 2] Invocando tool: search_sales_library('preguntas de implicacion spin')\n[Paso 3] 2 fragmentos recuperados de la biblioteca de ventas.\n[Paso 4] Síntesis final con citas obligatorias:\nAgente > Para formular una pregunta de implicación, debes explorar las consecuencias del problema [S1]..."
+                },
+                {
+                  cmd: "uv run sales-agent stats",
+                  output: "Biblioteca de ventas: 49 fichas | 594 vectores activos | 0 llamadas externas"
+                }
+              ]
+            },
+            graph: {
+              type: "decision",
+              nodes: [
+                { id: "Q", name: "Mensaje de Entrada", state: "done" },
+                { id: "DEC", name: "¿Requiere Tool?", state: "running" },
+                { id: "TOOL", name: "search_sales_library", state: "waiting" },
+                { id: "ANS", name: "Respuesta con Citas", state: "idle" }
+              ]
+            },
+            code: {
+              file: "09-agentic-rag/src/agentic_rag/agent.py",
+              content: `SALES_TOOL_DEFINITION = {
+    "type": "function",
+    "function": {
+        "name": "search_sales_library",
+        "description": "Busca metodologías de venta consultiva en la biblioteca local.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Término conceptual a buscar"}
+            },
+            "required": ["query"]
+        }
+    }
+}`
+            },
+            quiz: {
+              question: "¿Por qué el runtime de 09-agentic-rag limita a una sola llamada de herramienta por turno?",
+              options: [
+                "Porque Ollama se bloquea si se hacen dos llamadas seguidas.",
+                "Como política de contención para evitar bucles infinitos, latencia excesiva y consumo desmedido de recursos.",
+                "Porque SQLite solo admite una consulta por día.",
+                "Para obligar al modelo a inventar los datos faltantes."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! El control de presupuesto de llamadas es una regla de seguridad fundamental para evitar bucles de ejecución infinitos."
+            }
+          }
+        ]
+      },
+      {
+        phaseId: 4,
+        phaseTitle: "Fase 4: Curaduría de Conocimiento y Benchmarking",
+        description: "Auditoría de afirmaciones (fact ledger) y evaluación de código local en sandboxes Docker sin red.",
+        sessions: [
+          {
+            id: "4.1",
+            title: "Laboratorio 13 — Curador de Conocimiento de Ventas",
+            duration: "15 min",
+            slides: [
+              {
+                title: "Calidad de Entrada = Calidad de Agente",
+                punch: "Un RAG alimentado con textos basura o marketing no revisado solo producirá alucinaciones elegantes.",
+                highlight: "13-sales-knowledge-curator crea un 'ledger de afirmaciones' con procedencia, revisión humana y control de versiones.",
+                script: "En el mundo real, los documentos con los que alimentamos a los agentes están llenos de contradicciones y publicidad engañosa. El Laboratorio 13 introduce una máquina de curaduría: descompone textos en claims atómicos, detecta conflictos entre fuentes y exige aprobación humana antes de publicar un release de conocimiento."
+              }
+            ],
+            theory: `
+              <h4>El Ciclo de Curaduría de Conocimiento</h4>
+              <p>Ubicación: <code>13-sales-knowledge-curator/</code></p>
+              <ul>
+                <li><strong>Extracción Atómica:</strong> Desglosa párrafos en afirmaciones verificables independientes.</li>
+                <li><strong>Detección de Conflictos:</strong> Marca si dos fuentes afirman cosas opuestas sobre un mismo concepto.</li>
+                <li><strong>Aprobación Humana:</strong> Nada se promueve a la base oficial de conocimiento sin la firma de un revisor.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\13-sales-knowledge-curator",
+              actions: [
+                {
+                  cmd: "uv run curator audit --corpus fixtures/raw_notes",
+                  output: "Auditoría completada:\n- Afirmaciones extraídas: 142\n- Conflictos detectados: 3\n- Estado: Requiere revisión humana antes de release."
+                }
+              ]
+            },
+            graph: {
+              type: "linear",
+              nodes: [
+                { id: "RAW", name: "Textos Crudos", state: "done" },
+                { id: "EXT", name: "Extracción de Claims", state: "done" },
+                { id: "REV", name: "Revisión Humana", state: "running" },
+                { id: "REL", name: "Release Verificado", state: "queued" }
+              ]
+            },
+            code: {
+              file: "13-sales-knowledge-curator/src/curator/models.py",
+              content: `class Claim(BaseModel):
+    id: str
+    statement: str = Field(..., description="Afirmación atómica verificable")
+    source_file: str
+    source_lines: tuple[int, int]
+    human_verified: bool = False
+    verification_hash: str | None = None`
+            },
+            quiz: {
+              question: "¿Cuál es la función central del 'ledger de afirmaciones' en el curador de conocimiento?",
+              options: [
+                "Traducir automáticamente libros del inglés al español.",
+                "Tener trazabilidad exacta de dónde surgió cada idea y verificar su veracidad antes de usarla en un RAG.",
+                "Subir los datos a un servidor público en la nube.",
+                "Borrar archivos del disco duro sin confirmación."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! El ledger de afirmaciones garantiza que cada dato utilizado por un agente tenga procedencia trazable y validación previa."
+            }
+          },
+          {
+            id: "4.2",
+            title: "Laboratorio 14 — Benchmark de Código Local con Hermes",
+            duration: "18 min",
+            slides: [
+              {
+                title: "Aislamiento Absoluto: Docker sin Red (--network=none)",
+                punch: "Un agente que escribe y ejecuta código no debe tener acceso a internet ni a tus archivos personales.",
+                highlight: "14-local-code-hermes ejecuta Hermes contra Ollama dentro de un contenedor Docker hermético.",
+                script: "Permitir que un modelo de lenguaje ejecute código en tu máquina host es un riesgo de seguridad crítico. El Laboratorio 14 implementa un entorno de pruebas con Docker configurado con flag network none, garantizando que el modelo jamás pueda contactar con el exterior ni infectar el sistema."
+              },
+              {
+                title: "Preflight Formal de Diez Gates",
+                punch: "Antes de lanzar un benchmark oficial, se ejecutan diez comprobaciones rigurosas.",
+                highlight: "Valida: firewall local, contexto de 64k tokens, ausencia de proxies, compatibilidad de arquitectura y tests sanitarios.",
+                script: "Para que un benchmark sea científicamente válido, no basta con probar una vez. El preflight de BL_Loops verifica diez puertas de calidad y exporta un registro JSONL formal F-LOCAL-CODE-004."
+              }
+            ],
+            theory: `
+              <h4>Protocolo de Benchmark de Código</h4>
+              <p>Ubicación: <code>14-local-code-hermes/</code></p>
+              <ul>
+                <li><strong>Modelo:</strong> Alias <code>local-code-9b-64k</code> derivado de <code>qwen3.5:9b</code> configurado con 65,536 tokens.</li>
+                <li><strong>Sandbox:</strong> Contenedor Docker temporal por sesión montando únicamente el workspace de la tarea.</li>
+                <li><strong>Validación de salida:</strong> Pruebas unitarias, análisis estático y pruebas de mutación.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops\\14-local-code-hermes",
+              actions: [
+                {
+                  cmd: "uv run hermes-preflight --formal",
+                  output: "Iniciando preflight de diez gates...\n[Gate 1] Firewall loopback: OK\n[Gate 2] Modelo local-code-9b-64k (65536 ctx): OK\n[Gate 3] Docker daemon disponible: OK\nPreflight completado con exito. JSONL registrado."
+                }
+              ]
+            },
+            graph: {
+              type: "pipeline",
+              nodes: [
+                { id: "PRF", name: "Preflight 10 Gates", state: "done" },
+                { id: "DCK", name: "Docker (--network=none)", state: "running" },
+                { id: "EXE", name: "Ejecución de Hermes", state: "queued" },
+                { id: "TST", name: "Tests de Mutación", state: "idle" }
+              ]
+            },
+            code: {
+              file: "14-local-code-hermes/src/hermes_benchmark/docker.py",
+              content: `def run_in_sandbox(workspace_path: Path, test_cmd: list[str]) -> SandboxResult:
+    """Ejecuta la tarea en un contenedor Docker con la red totalmente desconectada."""
+    cmd = [
+        "docker", "run", "--rm",
+        "--network", "none",
+        "-v", f"{workspace_path.resolve()}:/workspace:rw",
+        "-w", "/workspace",
+        "python:3.12-slim",
+        *test_cmd
+    ]
+    return subprocess.run(cmd, capture_output=True, timeout=120)`
+            },
+            quiz: {
+              question: "¿Por qué es crucial ejecutar las pruebas de código local con la bandera '--network=none' en Docker?",
+              options: [
+                "Para que Docker descargue paquetes más rápido.",
+                "Para garantizar que no exista salida de datos confidenciales ni llamadas a internet durante la ejecución del código generado.",
+                "Porque Windows 11 no permite tarjetas de red virtuales.",
+                "Para desactivar el uso del ventilador de la computadora."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! El aislamiento de red garantiza el principio de cero egress y evita que scripts generados descarguen código malicioso o filtren datos."
+            }
+          }
+        ]
+      },
+      {
+        phaseId: 5,
+        phaseTitle: "Fase 5: Orquestación, Loops y Certificación",
+        description: "Máquinas de estados visuales, arquitecturas multiagente y examen de certificación.",
+        sessions: [
+          {
+            id: "5.1",
+            title: "Máquinas de Estados y Loops de Agentes",
+            duration: "15 min",
+            slides: [
+              {
+                title: "De la Ejecución Lineal a los Bucles Controlados",
+                punch: "Un loop agéntico permite autocrítica y reintentos, pero requiere presupuestos estrictos de detención.",
+                highlight: "Estados canónicos: idle, queued, running, waiting, retrying, done, failed, blocked.",
+                script: "Cerramos la arquitectura técnica comprendiendo los loops de agentes. Un loop permite que un agente evalúe su propia respuesta y la corrija. Sin embargo, todo loop en BL_Loops debe contar con tres frenos de emergencia: presupuesto máximo de iteraciones, timeout estricto de tiempo y límite de errores consecutivos."
+              },
+              {
+                title: "Visualización en Vivo de Nodos",
+                punch: "El usuario debe ver qué nodo está procesando mediante colores y estados sin cajas negras.",
+                highlight: "Los dashboards emiten eventos SSE en tiempo real y reflejan la ruta activa del grafo con animaciones reales.",
+                script: "El repositorio rechaza terminantemente las interfaces que fingen actividad con temporizadores estúpidos. Los colores del grafo representan estados reales reportados por el backend en cada milisegundo."
+              }
+            ],
+            theory: `
+              <h4>Los 8 Estados Visuales Canónicos</h4>
+              <table class="w-full text-left text-xs border border-slate-800">
+                <tr class="border-b border-slate-800 bg-slate-900/80"><th class="p-2">Estado</th><th class="p-2">Color</th><th class="p-2">Significado</th></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">idle</td><td class="p-2 text-slate-400">Gris</td><td class="p-2">Aún no participa en la corrida.</td></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">queued</td><td class="p-2 text-blue-400">Azul</td><td class="p-2">En cola esperando su turno.</td></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">running</td><td class="p-2 text-amber-400">Ámbar (Pulse)</td><td class="p-2">Procesando activamente en GPU/CPU.</td></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">waiting</td><td class="p-2 text-purple-400">Violeta</td><td class="p-2">Esperando herramienta o respuesta externa.</td></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">retrying</td><td class="p-2 text-orange-400">Naranja</td><td class="p-2">Reintentando bajo política de reintento.</td></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">done</td><td class="p-2 text-emerald-400">Verde</td><td class="p-2">Completado con éxito y contrato validado.</td></tr>
+                <tr class="border-b border-slate-800/60"><td class="p-2 font-mono">failed</td><td class="p-2 text-rose-400">Rojo</td><td class="p-2">Terminado con error no recuperable.</td></tr>
+                <tr><td class="p-2 font-mono">blocked</td><td class="p-2 text-red-700">Granate</td><td class="p-2">Requiere autorización o decisión humana.</td></tr>
+              </table>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops",
+              actions: [
+                {
+                  cmd: "pytest",
+                  output: "================ 42 passed in 1.85s ================\n# Todas las pruebas de contratos, FTS5 y aislamiento están verificadas."
+                }
+              ]
+            },
+            graph: {
+              type: "loop",
+              nodes: [
+                { id: "IN", name: "Entrada", state: "done" },
+                { id: "GEN", name: "Generador", state: "done" },
+                { id: "EVAL", name: "Crítico / Auditor", state: "running" },
+                { id: "DEC", name: "¿Pasa Criterio?", state: "waiting" },
+                { id: "OUT", name: "Salida Final", state: "queued" }
+              ]
+            },
+            code: {
+              file: "docs/PLAN_MAESTRO_DIDACTICO.md (Presupuesto de Loops)",
+              content: `### Reglas de Contención de Loops
+1. Max_iterations: Máximo 3 ciclos de corrección por consulta.
+2. Error_budget: Abortar inmediatamente si ocurren 2 excepciones consecutivas.
+3. No-effect check: Reintentar únicamente si el fallo no generó efectos secundarios externos.`
+            },
+            quiz: {
+              question: "¿Qué condición es indispensable para que un loop de reintento sea seguro en un agente?",
+              options: [
+                "Que el modelo tenga más de 70 billones de parámetros.",
+                "Tener presupuestos definidos de iteraciones máximas, tiempo y verificación de no-efectos colaterales.",
+                "Usar una base de datos en memoria Redis sin contraseña.",
+                "Desactivar las validaciones de tipo en Python."
+              ],
+              correct: 1,
+              feedback: "¡Exacto! Todo loop debe estar acotado por presupuestos de iteración, tiempo y comprobación de efectos."
+            }
+          },
+          {
+            id: "5.2",
+            title: "Evaluación Final y Emisión de Certificado",
+            duration: "10 min",
+            slides: [
+              {
+                title: "Certificación de Competencias en BL_Loops",
+                punch: "Has recorrido el ecosistema completo: contratos, CLI básico, familias RAG, curaduría y sandbox.",
+                highlight: "Responde el examen final para generar tu certificado de finalización de la Masterclass.",
+                script: "Felicitaciones por llegar a la última sesión. Has comprendido la arquitectura canónica de agentes de IA local de BL_Loops. Ahora pon a prueba tus conocimientos globales en este examen final para desbloquear tu certificado interactivo."
+              }
+            ],
+            theory: `
+              <h4>Resumen de Competencias Adquiridas</h4>
+              <ul>
+                <li>✅ <strong>Arquitectura de IA Local:</strong> Configuración de Ollama, gestión con <code>uv</code> y cero dependencia de la nube.</li>
+                <li>✅ <strong>Contratos Estrictos:</strong> Modelos Pydantic para <code>PromptSpec</code> y <code>AgentSpec</code>.</li>
+                <li>✅ <strong>La Escalera RAG:</strong> Selección informada entre SQLite FTS5, Vectores Semánticos y Fusión Híbrida RRF.</li>
+                <li>✅ <strong>Seguridad y Aislamiento:</strong> Sandboxes Docker sin red y políticas de presupuesto en loops.</li>
+                <li>✅ <strong>Trazabilidad:</strong> Auditoría de métricas de latencia y estados con JSONL sanitizado.</li>
+              </ul>
+            `,
+            terminal: {
+              pwd: "PS C:\\Users\\criss\\Desktop\\Claude\\BL_Loops",
+              actions: [
+                {
+                  cmd: "Write-Host '¡Certificación lista para ser emitida!' -ForegroundColor Green",
+                  output: "¡Certificación lista para ser emitida!\nHas completado los cinco movimientos didácticos del repositorio maestro."
+                }
+              ]
+            },
+            graph: {
+              type: "linear",
+              nodes: [
+                { id: "F1", name: "Fase 1: Reglas", state: "done" },
+                { id: "F2", name: "Fase 2: Contratos", state: "done" },
+                { id: "F3", name: "Fase 3: RAG", state: "done" },
+                { id: "F4", name: "Fase 4: Sandboxes", state: "done" },
+                { id: "F5", name: "Fase 5: Certificado", state: "done" }
+              ]
+            },
+            code: {
+              file: "CERTIFICADO_METADATA.json",
+              content: `{
+  "course": "BL_Loops Masterclass de Agentes de IA Local",
+  "version": "0.2.4",
+  "competencies": [
+    "Ollama Loopback Runtime",
+    "Pydantic Agent Contracts",
+    "SQLite FTS5 + Vector RRF",
+    "Agentic Tool Calling",
+    "Docker Sandboxing"
+  ],
+  "status": "APPROVED"
+}`
+            },
+            quiz: {
+              question: "Pregunta Final: ¿Cuál es el objetivo principal del proyecto BL_Loops?",
+              options: [
+                "Crear un software SaaS de pago para vender suscripciones en la web.",
+                "Construir una escalera de laboratorios independientes, visuales y 100% locales para aprender y comparar agentes con evidencia reproducible.",
+                "Entrenar un modelo de lenguaje propietario desde cero con billones de parámetros.",
+                "Crear una copia exacta de LangChain y AutoGen."
+              ],
+              correct: 1,
+              feedback: "¡Excelente! Has dominado el propósito exacto y la filosofía de BL_Loops. ¡Certificado desbloqueado!"
+            }
+          }
+        ]
+      }
+    ];
+
+    // APPLICATION STATE
+    let currentPhaseIndex = 0;
+    let currentSessionIndex = 0;
+    let currentSlideIndex = 0;
+    let isPlaying = false;
+    let playbackSpeed = 1.0;
+    let userProgress = JSON.parse(localStorage.getItem('bl_loops_progress') || '{}');
+    let ttsUtterance = null;
+    let ttsEnabled = true;
+
+    // DOM ELEMENTS
+    const curriculumContainer = document.getElementById('curriculum-container');
+    const badgePhase = document.getElementById('badge-phase');
+    const badgeSessionTag = document.getElementById('badge-session-tag');
+    const badgeDuration = document.getElementById('badge-duration');
+    const sessionCompletedPill = document.getElementById('session-completed-pill');
+    const slideIndicator = document.getElementById('slide-indicator');
+    const stageSlideContent = document.getElementById('stage-slide-content');
+    const slideDotsContainer = document.getElementById('slide-dots-container');
+    const sessionFullText = document.getElementById('session-full-text');
+    const terminalHistory = document.getElementById('terminal-history');
+    const terminalPwd = document.getElementById('terminal-pwd');
+    const terminalActionsContainer = document.getElementById('terminal-actions-container');
+    const graphContainer = document.getElementById('graph-interactive-container');
+    const codeSnippetBox = document.getElementById('code-snippet-box');
+    const codeFileTitle = document.getElementById('code-file-title');
+    const quizContainer = document.getElementById('quiz-container');
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const iconPlay = document.getElementById('icon-play');
+    const iconPause = document.getElementById('icon-pause');
+    const videoScrubberProgress = document.getElementById('video-scrubber-progress');
+    const playerTimeDisplay = document.getElementById('player-time-display');
+    const topProgressBar = document.getElementById('top-progress-bar');
+    const topProgressText = document.getElementById('top-progress-text');
+    const btnToggleTts = document.getElementById('btn-toggle-tts');
+    const ttsWave = document.getElementById('tts-wave');
+    const ttsStatusText = document.getElementById('tts-status-text');
+
+    // HELPER: Get current session object
+    function getCurrentSession() {
+      return COURSE_DATA[currentPhaseIndex].sessions[currentSessionIndex];
+    }
+
+    // INITIALIZATION
+    function init() {
+      renderCurriculumSidebar();
+      loadSession(0, 0);
+      setupEventListeners();
+      updateGlobalProgress();
+      initSpeech();
+    }
+
+    // SPEECH SYNTHESIS SETUP
+    function initSpeech() {
+      if (!('speechSynthesis' in window)) {
+        ttsEnabled = false;
+        ttsStatusText.innerText = "No disponible";
+        btnToggleTts.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function speakText(text) {
+      if (!ttsEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      ttsUtterance = new SpeechSynthesisUtterance(text);
+      ttsUtterance.lang = 'es-ES';
+      ttsUtterance.rate = playbackSpeed;
+      
+      ttsUtterance.onstart = () => {
+        ttsWave.classList.remove('hidden');
+        ttsWave.classList.add('flex');
+        ttsStatusText.innerText = "Narrando...";
+      };
+
+      ttsUtterance.onend = () => {
+        ttsWave.classList.add('hidden');
+        ttsWave.classList.remove('flex');
+        ttsStatusText.innerText = "Voz: Lista";
+        // Auto-advance slide if playing
+        if (isPlaying) {
+          const session = getCurrentSession();
+          if (currentSlideIndex < session.slides.length - 1) {
+            nextSlide();
+          } else {
+            togglePlay(false);
+          }
+        }
+      };
+
+      ttsUtterance.onerror = () => {
+        ttsWave.classList.add('hidden');
+        ttsWave.classList.remove('flex');
+        ttsStatusText.innerText = "Voz: Lista";
+      };
+
+      window.speechSynthesis.speak(ttsUtterance);
+    }
+
+    function stopSpeech() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      ttsWave.classList.add('hidden');
+      ttsWave.classList.remove('flex');
+      ttsStatusText.innerText = "Voz: Pausada";
+    }
+
+    // RENDER PLAYLIST SIDEBAR
+    function renderCurriculumSidebar() {
+      curriculumContainer.innerHTML = '';
+
+      COURSE_DATA.forEach((phase, pIdx) => {
+        const phaseWrapper = document.createElement('div');
+        phaseWrapper.className = "p-3";
+
+        // Phase Title Header
+        const phaseHeader = document.createElement('div');
+        phaseHeader.className = "flex items-center justify-between text-xs font-bold text-slate-300 py-1.5 px-2 rounded-lg cursor-pointer hover:bg-slate-800/60";
+        phaseHeader.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-3 bg-indigo-500 rounded-full"></span>
+            <span class="truncate">${phase.phaseTitle}</span>
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono">${phase.sessions.length} lecciones</span>
+        `;
+        phaseWrapper.appendChild(phaseHeader);
+
+        // Sessions List
+        const sessionList = document.createElement('div');
+        sessionList.className = "mt-1.5 space-y-1 pl-2 border-l border-slate-800/80 ml-2";
+
+        phase.sessions.forEach((session, sIdx) => {
+          const isCurrent = (pIdx === currentPhaseIndex && sIdx === currentSessionIndex);
+          const isDone = !!userProgress[session.id];
+
+          const item = document.createElement('div');
+          item.className = `p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-all ${
+            isCurrent
+              ? 'bg-indigo-600/20 border border-indigo-500/50 text-white font-semibold'
+              : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+          }`;
+
+          item.innerHTML = `
+            <div class="flex items-center gap-2 truncate pr-2">
+              <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono ${
+                isDone 
+                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' 
+                  : isCurrent 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'bg-slate-800 text-slate-400'
+              }">
+                ${isDone ? '✓' : session.id}
+              </span>
+              <span class="truncate">${session.title}</span>
+            </div>
+            <span class="text-[10px] text-slate-500 shrink-0 font-mono">${session.duration}</span>
+          `;
+
+          item.onclick = () => {
+            loadSession(pIdx, sIdx);
+          };
+
+          sessionList.appendChild(item);
+        });
+
+        phaseWrapper.appendChild(sessionList);
+        curriculumContainer.appendChild(phaseWrapper);
+      });
+    }
+
+    // LOAD A SPECIFIC SESSION
+    function loadSession(pIdx, sIdx) {
+      stopSpeech();
+      togglePlay(false);
+
+      currentPhaseIndex = pIdx;
+      currentSessionIndex = sIdx;
+      currentSlideIndex = 0;
+
+      const phase = COURSE_DATA[currentPhaseIndex];
+      const session = phase.sessions[currentSessionIndex];
+
+      // Badges
+      badgePhase.innerText = `Fase ${phase.phaseId}`;
+      badgeSessionTag.innerText = `Sesión ${session.id}: ${session.title}`;
+      badgeDuration.innerHTML = `
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        ${session.duration}
+      `;
+
+      // Check if already completed
+      if (userProgress[session.id]) {
+        sessionCompletedPill.classList.remove('hidden');
+        sessionCompletedPill.classList.add('flex');
+      } else {
+        sessionCompletedPill.classList.add('hidden');
+        sessionCompletedPill.classList.remove('flex');
+      }
+
+      // Render Stage Slide
+      renderSlide();
+
+      // Render Theory
+      sessionFullText.innerHTML = session.theory;
+
+      // Render Terminal
+      renderTerminal();
+
+      // Render Graph
+      renderGraph();
+
+      // Render Code
+      codeFileTitle.innerText = session.code.file;
+      codeSnippetBox.innerText = session.code.content;
+
+      // Render Quiz
+      renderQuiz();
+
+      // Update Playlist Highlighting
+      renderCurriculumSidebar();
+    }
+
+    // RENDER SLIDE (Interactive Video Canvas)
+    function renderSlide() {
+      const session = getCurrentSession();
+      const slide = session.slides[currentSlideIndex];
+
+      slideIndicator.innerText = `Parte ${currentSlideIndex + 1} de ${session.slides.length}`;
+
+      stageSlideContent.innerHTML = `
+        <div class="space-y-4">
+          <div class="inline-block px-2 py-0.5 rounded text-[10px] font-mono tracking-wider uppercase bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
+            Concepto Clave #${currentSlideIndex + 1}
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-snug">
+            ${slide.title}
+          </h2>
+          <p class="text-sm md:text-base text-slate-300 font-medium leading-relaxed">
+            ${slide.punch}
+          </p>
+          <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/80 text-xs md:text-sm text-cyan-200 flex items-start gap-3 shadow-inner">
+            <span class="text-base">💡</span>
+            <div>${slide.highlight}</div>
+          </div>
+        </div>
+      `;
+
+      // Update slide dots
+      slideDotsContainer.innerHTML = '';
+      session.slides.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.className = `w-2.5 h-2.5 rounded-full transition-all ${
+          idx === currentSlideIndex 
+            ? 'w-6 bg-indigo-500' 
+            : 'bg-slate-700 hover:bg-slate-600'
+        }`;
+        dot.onclick = () => {
+          currentSlideIndex = idx;
+          renderSlide();
+          if (isPlaying) speakCurrentSlide();
+        };
+        slideDotsContainer.appendChild(dot);
+      });
+
+      // Update Scrubber Progress
+      const pct = ((currentSlideIndex + 1) / session.slides.length) * 100;
+      videoScrubberProgress.style.width = `${pct}%`;
+      playerTimeDisplay.innerText = `0${currentSlideIndex + 1}:00 / 0${session.slides.length}:00`;
+
+      // Disable/Enable Slide Buttons
+      document.getElementById('btn-slide-prev').disabled = (currentSlideIndex === 0);
+    }
+
+    function speakCurrentSlide() {
+      const session = getCurrentSession();
+      const slide = session.slides[currentSlideIndex];
+      speakText(slide.script);
+    }
+
+    function nextSlide() {
+      const session = getCurrentSession();
+      if (currentSlideIndex < session.slides.length - 1) {
+        currentSlideIndex++;
+        renderSlide();
+        if (isPlaying) speakCurrentSlide();
+      } else {
+        // If at end of slides
+        togglePlay(false);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        currentSlideIndex--;
+        renderSlide();
+        if (isPlaying) speakCurrentSlide();
+      }
+    }
+
+    function togglePlay(forceState) {
+      isPlaying = (forceState !== undefined) ? forceState : !isPlaying;
+      if (isPlaying) {
+        iconPlay.classList.add('hidden');
+        iconPause.classList.remove('hidden');
+        speakCurrentSlide();
+      } else {
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        stopSpeech();
+      }
+    }
+
+    // TERMINAL TAB LOGIC
+    function renderTerminal() {
+      const session = getCurrentSession();
+      terminalPwd.innerText = session.terminal.pwd;
+      terminalHistory.innerHTML = `
+        <div class="text-slate-500"># Laboratorio activo: ${session.title}</div>
+        <div class="text-slate-500"># Haz clic en los comandos de abajo para simular la ejecución en tiempo real:</div>
+      `;
+
+      terminalActionsContainer.innerHTML = '';
+      session.terminal.actions.forEach((act) => {
+        const btn = document.createElement('button');
+        btn.className = "px-2.5 py-1 rounded-md bg-slate-800 hover:bg-indigo-950 text-indigo-300 hover:text-indigo-200 border border-slate-700/80 text-[11px] font-mono transition-all flex items-center gap-1.5";
+        btn.innerHTML = `<span>▶</span> <code>${act.cmd}</code>`;
+        btn.onclick = () => {
+          executeCommand(session.terminal.pwd, act.cmd, act.output);
+        };
+        terminalActionsContainer.appendChild(btn);
+      });
+    }
+
+    function executeCommand(pwd, cmd, output) {
+      const promptDiv = document.createElement('div');
+      promptDiv.className = "text-slate-200 pt-2";
+      promptDiv.innerHTML = `<span class="text-cyan-400 font-bold">${pwd}&gt;</span> ${cmd}`;
+      terminalHistory.appendChild(promptDiv);
+
+      const outDiv = document.createElement('div');
+      outDiv.className = "text-emerald-300 whitespace-pre-wrap pl-2 border-l border-emerald-800/60 my-1 font-mono text-[11px]";
+      outDiv.innerText = output;
+      terminalHistory.appendChild(outDiv);
+
+      terminalHistory.scrollTop = terminalHistory.scrollHeight;
+    }
+
+    // GRAPH TAB LOGIC
+    function renderGraph() {
+      const session = getCurrentSession();
+      const graph = session.graph;
+      graphContainer.innerHTML = '';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = "flex flex-wrap items-center justify-center gap-3 w-full";
+
+      graph.nodes.forEach((node, idx) => {
+        const stateColorMap = {
+          idle: 'border-slate-700 bg-slate-900/60 text-slate-400',
+          queued: 'border-blue-700 bg-blue-950/70 text-blue-300',
+          running: 'border-amber-500 bg-amber-950/80 text-amber-200 animate-pulse shadow-lg shadow-amber-500/20',
+          waiting: 'border-purple-600 bg-purple-950/70 text-purple-300',
+          done: 'border-emerald-600 bg-emerald-950/80 text-emerald-300',
+          failed: 'border-rose-600 bg-rose-950/80 text-rose-300'
+        };
+
+        const nodeBox = document.createElement('div');
+        nodeBox.className = `p-3 rounded-xl border ${stateColorMap[node.state] || stateColorMap.idle} flex flex-col items-center min-w-[120px] transition-all cursor-pointer hover:scale-105`;
+        nodeBox.innerHTML = `
+          <div class="text-[10px] font-mono uppercase tracking-wider opacity-70 mb-1">${node.state}</div>
+          <div class="text-xs font-bold text-center">${node.name}</div>
+        `;
+
+        // Interactive status changer on click to show off states
+        nodeBox.onclick = () => {
+          const states = ['idle', 'queued', 'running', 'waiting', 'done', 'failed'];
+          const nextState = states[(states.indexOf(node.state) + 1) % states.length];
+          node.state = nextState;
+          renderGraph();
+        };
+
+        wrapper.appendChild(nodeBox);
+
+        // Add arrow if not last node
+        if (idx < graph.nodes.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = "text-slate-600 font-bold hidden sm:inline";
+          arrow.innerText = '→';
+          wrapper.appendChild(arrow);
+        }
+      });
+
+      graphContainer.appendChild(wrapper);
+    }
+
+    // CHECKPOINT QUIZ LOGIC
+    function renderQuiz() {
+      const session = getCurrentSession();
+      const quiz = session.quiz;
+      quizContainer.innerHTML = '';
+
+      const qBox = document.createElement('div');
+      qBox.className = "space-y-3";
+
+      qBox.innerHTML = `
+        <div class="text-xs md:text-sm font-semibold text-slate-200">
+          ${quiz.question}
+        </div>
+      `;
+
+      const optionsList = document.createElement('div');
+      optionsList.className = "space-y-2";
+
+      quiz.options.forEach((opt, idx) => {
+        const optBtn = document.createElement('button');
+        optBtn.className = "w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-xs text-slate-300 transition-all flex items-center justify-between";
+        optBtn.innerHTML = `
+          <span>${opt}</span>
+          <span class="w-4 h-4 rounded-full border border-slate-700 flex items-center justify-center text-[10px] text-slate-500">${String.fromCharCode(65 + idx)}</span>
+        `;
+
+        optBtn.onclick = () => {
+          checkQuizAnswer(idx, optBtn, optionsList);
+        };
+
+        optionsList.appendChild(optBtn);
+      });
+
+      qBox.appendChild(optionsList);
+      quizContainer.appendChild(qBox);
+    }
+
+    function checkQuizAnswer(selectedIdx, btnElement, container) {
+      const session = getCurrentSession();
+      const quiz = session.quiz;
+      const isCorrect = (selectedIdx === quiz.correct);
+
+      // Disable buttons
+      Array.from(container.children).forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === quiz.correct) {
+          btn.className = "w-full text-left p-3 rounded-xl border border-emerald-600 bg-emerald-950/80 text-emerald-200 text-xs font-semibold flex items-center justify-between";
+        } else if (i === selectedIdx) {
+          btn.className = "w-full text-left p-3 rounded-xl border border-rose-600 bg-rose-950/80 text-rose-200 text-xs flex items-center justify-between";
+        } else {
+          btn.className = "w-full text-left p-3 rounded-xl border border-slate-800/40 bg-slate-900/30 text-slate-600 text-xs flex items-center justify-between";
+        }
+      });
+
+      // Feedback Box
+      const fbBox = document.createElement('div');
+      fbBox.className = `p-3 rounded-xl text-xs mt-3 flex items-start gap-2 ${
+        isCorrect ? 'bg-emerald-950/80 border border-emerald-800 text-emerald-300' : 'bg-rose-950/80 border border-rose-800 text-rose-300'
+      }`;
+      fbBox.innerHTML = `
+        <span class="text-base">${isCorrect ? '🎉' : '❌'}</span>
+        <div>
+          <div class="font-bold mb-0.5">${isCorrect ? '¡Respuesta Correcta!' : 'Respuesta Incorrecta'}</div>
+          <div>${quiz.feedback}</div>
+        </div>
+      `;
+      quizContainer.appendChild(fbBox);
+
+      if (isCorrect) {
+        // Mark session as complete
+        userProgress[session.id] = true;
+        localStorage.setItem('bl_loops_progress', JSON.stringify(userProgress));
+        sessionCompletedPill.classList.remove('hidden');
+        sessionCompletedPill.classList.add('flex');
+        updateGlobalProgress();
+        renderCurriculumSidebar();
+      }
+    }
+
+    // UPDATE PROGRESS INDICATORS
+    function updateGlobalProgress() {
+      let totalSessions = 0;
+      let completedCount = 0;
+
+      COURSE_DATA.forEach(phase => {
+        phase.sessions.forEach(session => {
+          totalSessions++;
+          if (userProgress[session.id]) completedCount++;
+        });
+      });
+
+      const pct = Math.round((completedCount / totalSessions) * 100);
+      topProgressBar.style.width = `${pct}%`;
+      topProgressText.innerText = `${pct}% (${completedCount}/${totalSessions} Sesiones)`;
+    }
+
+    // SETUP EVENT LISTENERS
+    function setupEventListeners() {
+      // Play / Pause
+      btnPlayPause.onclick = () => togglePlay();
+
+      // Next / Prev Slide
+      document.getElementById('btn-slide-next').onclick = () => nextSlide();
+      document.getElementById('btn-slide-prev').onclick = () => prevSlide();
+
+      // Speed selection
+      document.getElementById('select-speed').onchange = (e) => {
+        playbackSpeed = parseFloat(e.target.value);
+        if (ttsUtterance) ttsUtterance.rate = playbackSpeed;
+      };
+
+      // Restart lesson
+      document.getElementById('btn-restart-lesson').onclick = () => {
+        currentSlideIndex = 0;
+        renderSlide();
+        if (isPlaying) speakCurrentSlide();
+      };
+
+      // Navigation Sessions
+      document.getElementById('btn-session-next').onclick = () => {
+        const phase = COURSE_DATA[currentPhaseIndex];
+        if (currentSessionIndex < phase.sessions.length - 1) {
+          loadSession(currentPhaseIndex, currentSessionIndex + 1);
+        } else if (currentPhaseIndex < COURSE_DATA.length - 1) {
+          loadSession(currentPhaseIndex + 1, 0);
+        } else {
+          alert('¡Has completado todas las sesiones de la Masterclass BL_Loops!');
+        }
+      };
+
+      document.getElementById('btn-session-prev').onclick = () => {
+        if (currentSessionIndex > 0) {
+          loadSession(currentPhaseIndex, currentSessionIndex - 1);
+        } else if (currentPhaseIndex > 0) {
+          const prevPhase = COURSE_DATA[currentPhaseIndex - 1];
+          loadSession(currentPhaseIndex - 1, prevPhase.sessions.length - 1);
+        }
+      };
+
+      // Tab Switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active', 'bg-indigo-900/60', 'border-indigo-700', 'text-indigo-200');
+            b.classList.add('border-transparent', 'text-slate-400');
+          });
+          btn.classList.add('active', 'bg-indigo-900/60', 'border-indigo-700', 'text-indigo-200');
+          btn.classList.remove('border-transparent', 'text-slate-400');
+
+          const targetId = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          document.getElementById(targetId).classList.remove('hidden');
+        };
+      });
+
+      // Clear terminal
+      document.getElementById('btn-clear-terminal').onclick = () => {
+        terminalHistory.innerHTML = '<div class="text-slate-500"># Terminal limpiada.</div>';
+      };
+
+      // Reset progress
+      document.getElementById('btn-reset-progress').onclick = () => {
+        if (confirm('¿Deseas reiniciar tu progreso en la Masterclass?')) {
+          userProgress = {};
+          localStorage.removeItem('bl_loops_progress');
+          updateGlobalProgress();
+          loadSession(currentPhaseIndex, currentSessionIndex);
+        }
+      };
+
+      // Toggle TTS
+      btnToggleTts.onclick = () => {
+        ttsEnabled = !ttsEnabled;
+        if (!ttsEnabled) {
+          stopSpeech();
+          ttsStatusText.innerText = "Voz: Desactivada";
+          btnToggleTts.classList.add('opacity-50');
+        } else {
+          ttsStatusText.innerText = "Voz: Activada";
+          btnToggleTts.classList.remove('opacity-50');
+        }
+      };
+
+      // Fullscreen
+      document.getElementById('btn-toggle-fullscreen').onclick = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      };
+    }
+
+    // RUN AT LAUNCH
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
