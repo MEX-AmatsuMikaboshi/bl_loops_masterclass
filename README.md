@@ -1,10 +1,26 @@
 # 🎓 BL_Loops: Masterclass Interactiva de Agentes de IA Local
 
-Plataforma educativa interactiva y visual basada en el laboratorio [Cristrva1/BL_Loops](https://github.com/Cristrva1/BL_Loops). Diseñada en formato **Masterclass / Video-Curso**, enseña a construir, orquestar, evaluar y auditar agentes de IA 100% locales con Ollama.
+---
+
+> [!CAUTION]
+> # 📢 ATRIBUCIÓN Y RECONOCIMIENTO DE AUTORÍA INTELECTUAL 📢
+> ## 🌟 TODOS LOS CRÉDITOS, INVESTIGACIÓN, ARQUITECTURA Y METODOLOGÍA PERTENECEN A:
+> # 👑 [Cristrva1 / BL_Loops](https://github.com/Cristrva1/BL_Loops) 👑
+> ### 👤 Autor Original: [@Cristrva1](https://github.com/Cristrva1)
+> 🔗 **Repositorio Fuente Oficial:** 👉 [https://github.com/Cristrva1/BL_Loops](https://github.com/Cristrva1/BL_Loops) 👈
+>
+> ---
+>
+> ### 🛑 ACLARACIÓN DE AUTORÍA:
+> **Las ideas, metodología, estructura pedagógica y arquitectura de agentes presentes en este proyecto NO SON MÍAS.**
+> 
+> Todo el mérito intelectual, la concepción del laboratorio, la escalera de modelos locales en Ollama, el diseño de la escalera RAG (FTS5 léxico, Vectorial Híbrido RRF y RAG Agéntico), las políticas de cero egress, las trazas JSONL sanitizadas y los benchmarks en Docker fueron creados y diseñados por **[Cristrva1](https://github.com/Cristrva1)** en su repositorio canónico **[BL_Loops](https://github.com/Cristrva1/BL_Loops)**.
+>
+> Este repositorio es únicamente un **visor didáctico interactivo / plataforma de aprendizaje visual (Masterclass)** construida para estudiar, interactuar y asimilar de forma visual el excelente trabajo del autor original.
 
 ---
 
-## 🌟 Características Principales
+## 🌟 Características de la Plataforma de Estudio
 
 - **🎬 Reproductor de Aprendizaje tipo Video / Clase:**
   - Diapositivas dinámicas con conceptos clave, ideas fuerza y resúmenes ejecutivos.
@@ -72,3 +88,9 @@ No requiere servidores externos ni instalación de dependencias pesadas. Es 100%
 1. **100% IA Local:** Inferencia mediante Ollama en loopback (`127.0.0.1:11434`). Cero fugas de datos (*zero egress*).
 2. **Aislamiento Radical:** Cada laboratorio es autónomo, con su propio entorno `uv`, sus propias dependencias y sus propios datos locales.
 3. **Didáctico y Visual:** Cada paso expone sus entradas, salidas, estados y latencias en trazas de auditoría sanitaria JSONL.
+
+---
+
+## 🤝 Reconocimiento Especial
+
+Vayan todos los agradecimientos a **[Cristrva1](https://github.com/Cristrva1)** por idear, documentar y programar el laboratorio original [BL_Loops](https://github.com/Cristrva1/BL_Loops), un recurso formativo invaluable para la comunidad de desarrolladores de IA local.
